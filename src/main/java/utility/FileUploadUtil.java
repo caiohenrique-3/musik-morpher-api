@@ -11,23 +11,28 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class FileUploadUtil {
-    public static String saveFile(String fileName, MultipartFile file)
+    public static String saveFileToDiskAndGetUniqueCode(String fileName, MultipartFile file)
             throws IOException {
-        Path uploadPath = Paths.get("user-uploaded-files");
-
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
+        Path uploadsFolder = createUploadedUserFilesFolder();
         String fileCode = RandomStringUtils.randomAlphanumeric(8);
 
         try (InputStream inputStream = file.getInputStream()) {
-            Path filePath = uploadPath.resolve(fileCode + "-" + fileName);
+            Path filePath = uploadsFolder.resolve(fileCode + "-" + fileName);
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ioe) {
             throw new IOException("Could not save file: " + fileName, ioe);
         }
 
         return fileCode;
+    }
+
+    private static Path createUploadedUserFilesFolder() throws IOException {
+        Path uploadsFolder = Paths.get("user-uploaded-files");
+
+        if (!Files.exists(uploadsFolder)) {
+            Files.createDirectories(uploadsFolder);
+        }
+
+        return uploadsFolder;
     }
 }

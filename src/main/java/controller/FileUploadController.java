@@ -1,15 +1,12 @@
 package controller;
 
-import model.ProcessedFile;
+import model.AudioFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import utility.FileUploadUtil;
 
 import java.io.IOException;
 
@@ -19,28 +16,25 @@ import java.io.IOException;
 @RestController
 public class FileUploadController {
     @PostMapping("/upload")
-    public ResponseEntity<ProcessedFile> handleFileUpload(@RequestParam("file") MultipartFile file)
+    public ResponseEntity<AudioFile> handleFileUpload(@RequestParam("file") MultipartFile file)
             throws IOException {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-
-        double size = getRoundedFileSizeInMegabytes(file);
-
-        String fileCode = FileUploadUtil.saveFile(fileName, file);
-
-        ProcessedFile response = new ProcessedFile();
-        response.setFileName(fileName);
-        response.setSize(size);
-        response.setDownloadUri("/download/" + fileCode);
+        AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
+        AudioFile processedFile = processFileWithFfmpeg(userUploadedFile);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(response);
+                .body(processedFile);
     }
 
-    public double getRoundedFileSizeInMegabytes(MultipartFile file) {
-        long fileSizeInBytes = file.getSize();
-        double fileSizeInMegabytes = fileSizeInBytes / (1024.0 * 1024.0);
-        fileSizeInMegabytes = Math.round(fileSizeInMegabytes * 100.0) / 100.0;
-        return fileSizeInMegabytes;
+
+    private AudioFile processFileWithFfmpeg(AudioFile file) {
+        AudioFile response = new AudioFile();
+
+        // Logic with ffmpeg here...
+
+        response.setFileName(file.getFileName());
+        response.setSize(file.getSize());
+        response.setFileCode("/download/" + file.getFileCode());
+        return response;
     }
 }

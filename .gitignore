@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### created when user uploads file ###
+user-uploaded-files/
