@@ -17,12 +17,10 @@ public class FileDownloadController {
     @GetMapping("/download/{fileCode}")
     public ResponseEntity<?> downloadFile(
             @PathVariable("fileCode") String fileCode) {
-        FileDownloadUtil downloadUtil = new FileDownloadUtil();
-
         Resource resource = null;
 
         try {
-            resource = downloadUtil.getFileAsResource(fileCode);
+            resource = FileDownloadUtil.getFileAsResource(fileCode);
         } catch (IOException ioe) {
             return ResponseEntity.internalServerError().build();
         }
