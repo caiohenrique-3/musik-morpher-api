@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Logger;
 
 public class FileUploadUtil {
     public static String saveFileToDiskAndGetUniqueCode(String fileName, MultipartFile file)
@@ -18,6 +19,7 @@ public class FileUploadUtil {
 
         try (InputStream inputStream = file.getInputStream()) {
             Path filePath = uploadsFolder.resolve(fileCode + "-" + fileName);
+
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ioe) {
             throw new IOException("Could not save file: " + fileName, ioe);

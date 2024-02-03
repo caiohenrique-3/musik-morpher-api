@@ -10,31 +10,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import utility.FfmpegUtil;
+
 // Code for upload & download
 // https://www.codejava.net/frameworks/spring-boot/file-download-upload-rest-api-examples
 
 @RestController
 public class FileUploadController {
     @PostMapping("/upload")
-    public ResponseEntity<AudioFile> handleFileUpload(@RequestParam("file") MultipartFile file)
+    public ResponseEntity<AudioFile> handleFileUpload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "slowed", required = false) String slowed)
             throws IOException {
         AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
-        AudioFile processedFile = processFileWithFfmpeg(userUploadedFile);
+
+        AudioFile processedFile = FfmpegUtil.processFile(userUploadedFile, slowed);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(processedFile);
-    }
-
-
-    private AudioFile processFileWithFfmpeg(AudioFile file) {
-        AudioFile response = new AudioFile();
-
-        // Logic with ffmpeg here...
-
-        response.setFileName(file.getFileName());
-        response.setSize(file.getSize());
-        response.setFileCode("/download/" + file.getFileCode());
-        return response;
     }
 }
