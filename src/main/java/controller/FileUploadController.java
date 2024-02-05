@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 import utility.FfmpegUtil;
+import utility.FileUploadUtil;
 
 // Code for upload & download
 // https://www.codejava.net/frameworks/spring-boot/file-download-upload-rest-api-examples
@@ -18,16 +19,22 @@ import utility.FfmpegUtil;
 @RestController
 public class FileUploadController {
     @PostMapping("/upload")
-    public ResponseEntity<AudioFile> handleFileUpload(
+    public ResponseEntity<?> handleFileUpload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "slowed", required = false) String slowed)
             throws IOException {
-        AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
+        if (FileUploadUtil.isAudioFile(file)) {
+            AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
 
-        AudioFile processedFile = FfmpegUtil.processFile(userUploadedFile, slowed);
+            AudioFile processedFile = FfmpegUtil.processFile(userUploadedFile, slowed);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(processedFile);
+        }
 
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(processedFile);
+                .badRequest()
+                .body("Invalid file type. Please upload an audio file.");
     }
 }

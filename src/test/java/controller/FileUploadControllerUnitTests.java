@@ -48,7 +48,8 @@ public class FileUploadControllerUnitTests {
                         .file(mockImageFile)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN_VALUE));
+
     }
 
     @Test
