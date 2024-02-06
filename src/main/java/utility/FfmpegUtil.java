@@ -2,6 +2,7 @@ package utility;
 
 import model.AudioFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,19 +65,19 @@ public class FfmpegUtil {
         List<String> commandBody = new ArrayList<>();
 
         commandBody.add("ffmpeg");
+        commandBody.add("-y");
         commandBody.add("-i");
         commandBody.add(songPath);
         commandBody.add("-filter:a");
         commandBody.add("atempo=1.0,asetrate=44100*" + asetRateModifier);
-        commandBody.add("-c:v");
-        commandBody.add("copy");
-        commandBody.add("-c:a");
-        commandBody.add("aac");
-        commandBody.add("-strict");
-        commandBody.add("experimental");
+        commandBody.add("-vn");
         commandBody.add("-map");
         commandBody.add("0");
-        commandBody.add("output.mp4");
+        commandBody.add("-map_metadata");
+        commandBody.add("0:g");
+        File f = new File(songPath);
+        String tempFilePath = f.getParent() + "/temp_" + f.getName();
+        commandBody.add(tempFilePath);
 
         return commandBody;
     }
@@ -87,12 +88,22 @@ public class FfmpegUtil {
         ProcessBuilder processBuilder = new ProcessBuilder(commands);
 
         processBuilder.directory(workingDirectory.toFile());
+        processBuilder.redirectErrorStream(true);
 
         Process process = processBuilder.start();
 
         int exitCode = process.waitFor();
 
         if (exitCode == 0) {
+            File originalFile = new File(commands.get(3));
+            File tempFile = new File(commands.get(commands.size() - 1));
+
+            if (originalFile.delete() && tempFile.renameTo(originalFile)) {
+                System.out.println("[FFMPEG]: File replaced successfully");
+            } else {
+                System.out.println("[FFMPEG]: Failed to replace file");
+            }
+
             System.out.println("[FFMPEG]: Success");
         } else {
             System.out.println("[FFMPEG]: Failed with exit code " + exitCode);
