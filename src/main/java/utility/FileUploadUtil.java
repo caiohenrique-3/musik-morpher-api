@@ -1,5 +1,6 @@
 package utility;
 
+import controller.exceptions.UploadedFileIsTooBigException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,5 +42,15 @@ public class FileUploadUtil {
         }
 
         return uploadsFolder;
+    }
+
+    public static boolean isAllowedFileSize(MultipartFile file) {
+        long sizeInBytes = file.getSize();
+        long sizeInMB = sizeInBytes / (1024 * 1024);
+        if (sizeInMB <= 15) {
+            return true;
+        } else {
+            throw new UploadedFileIsTooBigException();
+        }
     }
 }

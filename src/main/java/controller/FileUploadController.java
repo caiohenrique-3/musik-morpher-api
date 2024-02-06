@@ -23,7 +23,8 @@ public class FileUploadController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "slowed", required = false) String slowed)
             throws IOException {
-        if (FileUploadUtil.isAudioFile(file)) {
+        if (FileUploadUtil.isAudioFile(file)
+                && FileUploadUtil.isAllowedFileSize(file)) {
             AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
 
             AudioFile processedFile = FfmpegUtil.processFile(userUploadedFile, slowed);
