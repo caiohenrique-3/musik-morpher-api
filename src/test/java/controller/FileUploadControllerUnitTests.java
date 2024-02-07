@@ -132,6 +132,41 @@ public class FileUploadControllerUnitTests {
     }
 
     @Test()
+    void givenCreateFromMultipartFileSucceeds_whenPostFile_thenReturnAudioFile()
+            throws Exception {
+        // Mock for the post request
+        MockMultipartFile mockUploadedFile = new MockMultipartFile(
+                "file",
+                randomFileName + ".mp3",
+                "audio/mpeg",
+                SAMPLE_SONG_CONTENT);
+
+        // Mock for the static method
+        MultipartFile mockMultipartFile = mock(MultipartFile.class);
+        doReturn(mockUploadedFile.getName()).when(mockMultipartFile).getName();
+        doReturn(mockUploadedFile.getOriginalFilename()).when(mockMultipartFile).getOriginalFilename();
+        doReturn(mockUploadedFile.getContentType()).when(mockMultipartFile).getContentType();
+        doReturn(mockUploadedFile.getInputStream()).when(mockMultipartFile).getInputStream();
+
+        // Static method mock
+        try (MockedStatic<AudioFile> audioFileMockedStatic =
+                     mockStatic(AudioFile.class, CALLS_REAL_METHODS)) {
+            audioFileMockedStatic
+                    .when(() -> AudioFile.createFromMultipartFile(mockMultipartFile))
+                    .thenReturn(any(AudioFile.class));
+        }
+
+
+        // Post request
+        mvc.perform(multipart(END_POINT_PATH)
+                        .file(mockUploadedFile)
+                        .param("slowed", "false")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    @Test()
     void givenCreateFromMultipartFileFails_whenPostFile_thenInternalServerError()
             throws Exception {
         MockMultipartFile mockUploadedFile = new MockMultipartFile(
@@ -140,19 +175,19 @@ public class FileUploadControllerUnitTests {
                 "audio/mpeg",
                 SAMPLE_SONG_CONTENT);
 
-        MockedStatic<AudioFile> audioFileMockedStatic =
-                mockStatic(AudioFile.class, CALLS_REAL_METHODS);
+        try (MockedStatic<AudioFile> audioFileMockedStatic =
+                     mockStatic(AudioFile.class, CALLS_REAL_METHODS)) {
+            audioFileMockedStatic
+                    .when(() -> AudioFile.createFromMultipartFile(any(MultipartFile.class)))
+                    .thenThrow(IOException.class);
 
-        audioFileMockedStatic
-                .when(() -> AudioFile.createFromMultipartFile(any(MultipartFile.class)))
-                .thenThrow(IOException.class);
-
-        mvc.perform(multipart(END_POINT_PATH)
-                        .file(mockUploadedFile)
-                        .param("slowed", "false")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN));
+            mvc.perform(multipart(END_POINT_PATH)
+                            .file(mockUploadedFile)
+                            .param("slowed", "false")
+                            .contentType(MediaType.MULTIPART_FORM_DATA))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN));
+        }
     }
 
     @Test
