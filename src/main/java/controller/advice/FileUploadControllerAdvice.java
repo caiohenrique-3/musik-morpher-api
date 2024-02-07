@@ -8,7 +8,7 @@ import java.io.IOException;
 
 @RestControllerAdvice
 public class FileUploadControllerAdvice {
-    @ExceptionHandler(IOException.class)
+    @ExceptionHandler({IOException.class, InterruptedException.class})
     public ResponseEntity<String> handleIoException() {
         return ResponseEntity
                 .internalServerError()
