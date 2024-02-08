@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.util.StringUtils.cleanPath;
 
 public class FileUploadUtilUnitTests {
     private static final Path SAMPLE_SONG = Paths.get("src/test/sample.mp3");
@@ -44,10 +43,7 @@ public class FileUploadUtilUnitTests {
         doReturn(new ByteArrayInputStream(SAMPLE_SONG_CONTENT))
                 .when(mockMultipartFile).getInputStream();
 
-        FileUploadUtil.isAudioFile(mockMultipartFile);
-
         assertEquals(true, FileUploadUtil.isAudioFile(mockMultipartFile));
-
     }
 
     @Test
@@ -58,8 +54,6 @@ public class FileUploadUtilUnitTests {
         doReturn("audio/mpeg").when(mockMultipartFile).getContentType();
         doReturn(new ByteArrayInputStream(SAMPLE_SONG_CONTENT))
                 .when(mockMultipartFile).getInputStream();
-
-        FileUploadUtil.isAudioFile(mockMultipartFile);
 
         assertEquals(false, FileUploadUtil.isAudioFile(mockMultipartFile));
     }
@@ -78,7 +72,6 @@ public class FileUploadUtilUnitTests {
 
         assertNotEquals(null, FileUploadUtil
                 .saveFileToDiskAndGetUniqueCode(cleanFileName, mockMultipartFile));
-
     }
 
     @Test
@@ -94,7 +87,6 @@ public class FileUploadUtilUnitTests {
 
         assertThrows(IOException.class, () -> FileUploadUtil
                 .saveFileToDiskAndGetUniqueCode(cleanFileName, mockMultipartFile));
-
     }
 
     @Test

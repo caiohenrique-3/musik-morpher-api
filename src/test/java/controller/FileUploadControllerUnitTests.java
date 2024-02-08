@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.powermock.core.classloader.annotations.PrepareEverythingForTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -77,7 +78,6 @@ public class FileUploadControllerUnitTests {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN_VALUE));
-
     }
 
     @Test
@@ -191,7 +191,6 @@ public class FileUploadControllerUnitTests {
     }
 
     @Test
-    @Disabled
     void givenFileBiggerThan15MB_whenPostFile_thenBadRequest() throws Exception {
         MockMultipartFile mockUploadedFile = new MockMultipartFile(
                 "file",
