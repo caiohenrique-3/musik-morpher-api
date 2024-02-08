@@ -15,12 +15,23 @@ public class FileCleanupService {
     private static final Logger logger = Logger.getLogger(FileCleanupService.class.getName());
 
     @PostConstruct
-    public void start() {
-        scheduler.scheduleAtFixedRate(this::deleteOldFiles, 0, 5, TimeUnit.MINUTES);
+    public void startService() {
+        scheduler.scheduleAtFixedRate(this::performCleanupAndScheduleNext, 0, 5, TimeUnit.MINUTES);
+    }
+
+    private void performCleanupAndScheduleNext() {
+        long startTime = System.currentTimeMillis();
+        deleteOldFiles();
+        long endTime = System.currentTimeMillis();
+
+        long duration = endTime - startTime;
+
+        long minutesUntilNextCleanup = 5 - TimeUnit.MILLISECONDS.toMinutes(duration);
+
+        logger.info("Next cleanup in: " + minutesUntilNextCleanup + " minutes");
     }
 
     private void deleteOldFiles() {
-        long startTime = System.currentTimeMillis();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("user-uploaded-files"))) {
             for (Path path : stream) {
                 if (Files.isRegularFile(path) && isFileOld(path)) {
@@ -31,10 +42,6 @@ public class FileCleanupService {
         } catch (IOException e) {
             logger.severe("An error occurred: " + e.getMessage());
         }
-        long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
-        long minutesUntilNextCleanup = 5 - TimeUnit.MILLISECONDS.toMinutes(duration);
-        logger.info("Next cleanup in: " + minutesUntilNextCleanup + " minutes");
     }
 
     private boolean isFileOld(Path path) throws IOException {
