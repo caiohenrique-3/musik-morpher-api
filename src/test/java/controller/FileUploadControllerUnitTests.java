@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 import utility.FileUploadUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,15 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FileUploadControllerUnitTests {
     private static final String END_POINT_PATH = "/upload";
     private static final Path SAMPLE_SONG = Paths.get("src/test/sample.mp3");
-    private static final byte[] SAMPLE_SONG_CONTENT;
-
-    static {
-        try {
-            SAMPLE_SONG_CONTENT = Files.readAllBytes(SAMPLE_SONG);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final byte[] SAMPLE_SONG_CONTENT = new byte[0];
 
     private String randomFileName;
 
@@ -122,7 +115,6 @@ public class FileUploadControllerUnitTests {
                 "audio/mpeg",
                 SAMPLE_SONG_CONTENT);
 
-
         mvc.perform(multipart(END_POINT_PATH)
                         .file(mockMultipartFile)
                         .param("slowed", "false")
@@ -154,16 +146,15 @@ public class FileUploadControllerUnitTests {
             audioFileMockedStatic
                     .when(() -> AudioFile.createFromMultipartFile(mockMultipartFile))
                     .thenReturn(any(AudioFile.class));
+
+            // Post request
+            mvc.perform(multipart(END_POINT_PATH)
+                            .file(mockUploadedFile)
+                            .param("slowed", "false")
+                            .contentType(MediaType.MULTIPART_FORM_DATA))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
         }
-
-
-        // Post request
-        mvc.perform(multipart(END_POINT_PATH)
-                        .file(mockUploadedFile)
-                        .param("slowed", "false")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test()

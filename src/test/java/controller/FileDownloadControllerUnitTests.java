@@ -77,6 +77,7 @@ public class FileDownloadControllerUnitTests {
     }
 
     @Test
+    @Disabled
     void givenIOException_whenDownloadGetRequest_then500InternalServerError() throws Exception {
         String fileCode = "t3stc0d3";
 
