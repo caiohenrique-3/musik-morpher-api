@@ -13,25 +13,21 @@ import java.io.IOException;
 import utility.FfmpegUtil;
 import utility.FileUploadUtil;
 
-// Code for upload & download
-// https://www.codejava.net/frameworks/spring-boot/file-download-upload-rest-api-examples
-
 @RestController
 public class FileUploadController {
     @PostMapping("/upload")
     public ResponseEntity<?> handleFileUpload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "slowed", required = false) String slowed)
+            @RequestParam(required = false) String slowed)
             throws IOException {
-        if (FileUploadUtil.isAudioFile(file)
-                && FileUploadUtil.isAllowedFileSize(file)) {
+        if (FileUploadUtil.isValidFile(file)) {
             AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
 
-            AudioFile processedFile = FfmpegUtil.processFile(userUploadedFile, slowed);
+            FfmpegUtil.processFile(userUploadedFile, slowed);
 
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(processedFile);
+                    .body(userUploadedFile);
         }
 
         return ResponseEntity

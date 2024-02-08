@@ -14,17 +14,14 @@ public class FfmpegUtil {
     static Logger logger =
             Logger.getLogger(FfmpegUtil.class.getName());
 
-    public static AudioFile processFile(AudioFile file, String slowed) {
+    public static void processFile(AudioFile file, String slowed) {
         if (slowed != null && slowed.equals("true"))
             slowDown(file);
         else
             nightcore(file);
 
-        AudioFile response = new AudioFile();
-        response.setFileName(file.getFileName());
-        response.setSize(file.getSize());
-        response.setFileCode("/download/" + file.getFileCode());
-        return response;
+        String fileCode = file.getFileCode();
+        file.setFileCode("/download/" + fileCode);
     }
 
     private static void slowDown(AudioFile file) {

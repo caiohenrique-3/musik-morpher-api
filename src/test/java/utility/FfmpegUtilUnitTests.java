@@ -27,20 +27,15 @@ public class FfmpegUtilUnitTests {
     @Test
     void givenHappyPath_whenProcessFile_thenDownloadUrl() throws IOException {
         String fileName = randomFileName + ".mp3";
+        String fileCode = "t3stc0d3";
 
-        AudioFile audioFile = mock(AudioFile.class);
-        doReturn("t3stc0d3").when(audioFile).getFileCode();
-        doReturn(fileName).when(audioFile).getFileName();
-        doReturn(1.0).when(audioFile).getSize();
+        AudioFile audioFile = new AudioFile();
+        audioFile.setFileCode(fileCode);
+        audioFile.setFileName(fileName);
+        audioFile.setSize(1.0);
 
-        try (MockedStatic<FfmpegUtil> ffmpegUtilMockedStatic = mockStatic(FfmpegUtil.class)) {
-            ffmpegUtilMockedStatic
-                    .when(() -> FfmpegUtil.processFile(any(AudioFile.class), anyString()))
-                    .thenReturn(audioFile);
-        }
+        FfmpegUtil.processFile(audioFile, "false");
 
-        assertTrue(FfmpegUtil.processFile(audioFile, "false")
-                .getFileCode()
-                .startsWith("/download/"));
+        assertTrue(audioFile.getFileCode().startsWith("/download/"));
     }
 }

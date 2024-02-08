@@ -13,6 +13,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class FileUploadUtil {
+    public static boolean isValidFile(MultipartFile file) {
+        return FileUploadUtil.isAudioFile(file)
+                && FileUploadUtil.isAllowedFileSize(file);
+    }
+
     public static boolean isAudioFile(MultipartFile file) {
         String fileName = file.getOriginalFilename();
         return StringUtils.getFilenameExtension(fileName).equals("mp3");
