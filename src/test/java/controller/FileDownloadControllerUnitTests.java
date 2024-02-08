@@ -77,18 +77,31 @@ public class FileDownloadControllerUnitTests {
     }
 
     @Test
-    @Disabled
     void givenIOException_whenDownloadGetRequest_then500InternalServerError() throws Exception {
-        String fileCode = "t3stc0d3";
+        String fileName = randomFileName + ".mp3";
 
-        try (MockedStatic<FileDownloadUtil> mockedFileDownloadUtil = mockStatic(FileDownloadUtil.class)) {
+        MultipartFile multipartFile = mock(MultipartFile.class);
+        doReturn("file").when(multipartFile).getName();
+        doReturn(fileName).when(multipartFile).getOriginalFilename();
+        doReturn("audio/mpeg").when(multipartFile).getContentType();
+        doReturn(new ByteArrayInputStream(new byte[0]))
+                .when(multipartFile).getInputStream();
+
+        AudioFile audioFile = AudioFile
+                .createFromMultipartFile(multipartFile);
+
+        try (MockedStatic<FileDownloadUtil> mockedFileDownloadUtil =
+                     mockStatic(FileDownloadUtil.class)) {
             mockedFileDownloadUtil
-                    .when(() -> FileDownloadUtil.getFileAsResource(anyString()))
+                    .when(() -> FileDownloadUtil
+                            .getFileAsResource(anyString()))
                     .thenThrow(new IOException("Test exception"));
+
+            mvc.perform(get(END_POINT_PATH +
+                            audioFile.getFileCode())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isInternalServerError());
         }
 
-        mvc.perform(get(END_POINT_PATH + fileCode)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
     }
 }
