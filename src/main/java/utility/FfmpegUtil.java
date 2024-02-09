@@ -71,7 +71,6 @@ public class FfmpegUtil {
         commandBody.add(songPath);
         commandBody.add("-filter:a");
         commandBody.add("atempo=" + atempo + ",asetrate=44100*" + asetRateModifier);
-        commandBody.add("-vn");
         commandBody.add("-map");
         commandBody.add("0");
         commandBody.add("-map_metadata");
