@@ -15,6 +15,12 @@ import utility.FileUploadUtil;
 
 @RestController
 public class FileUploadController {
+    private final FfmpegUtil ffmpegUtil;
+
+    public FileUploadController(FfmpegUtil ffmpegUtil) {
+        this.ffmpegUtil = ffmpegUtil;
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<?> handleFileUpload(
             @RequestParam("file") MultipartFile file,
@@ -23,7 +29,7 @@ public class FileUploadController {
         if (FileUploadUtil.isValidFile(file)) {
             AudioFile userUploadedFile = AudioFile.createFromMultipartFile(file);
 
-            FfmpegUtil.processFile(userUploadedFile, slowed);
+            ffmpegUtil.processFile(userUploadedFile, slowed);
 
             return ResponseEntity
                     .status(HttpStatus.OK)

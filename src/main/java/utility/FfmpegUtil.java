@@ -1,6 +1,7 @@
 package utility;
 
 import model.AudioFile;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,42 +10,49 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+// Since the class is now a bean in Spring, the values don't change between requests
+// This means if the first request has slowed = "true", it will change the values in the bean itself,
+// causing it to affect the next requests too, because asetRate and atempo will have the slowed values now.
+// TODO: Make Spring create & destroy a Bean of this type on each request.
+
+@Component
 public class FfmpegUtil {
-    public static void processFile(AudioFile file, String slowed) {
-        double asetRateModifier = 0;
-        double atempo = 0;
+    private double asetRateModifier;
+    private double atempo;
 
-        if (slowed != null && slowed.equals("true")) {
-            asetRateModifier = 0.9;
-            atempo = 1.0;
-        } else {
-            asetRateModifier = 1.25;
-            atempo = 1.06;
-        }
-
-        modifyAudioFile(file, asetRateModifier, atempo);
-
-        file.setFileCode("/download/" + file.getFileCode());
+    public FfmpegUtil() {
+        this.asetRateModifier = 1.25;
+        this.atempo = 1.06;
     }
 
-    private static void modifyAudioFile(AudioFile file,
-                                        double asetRateModifier,
-                                        double atempo) {
+    public void processFile(AudioFile file, String slowed) {
+        if (slowed != null && slowed.equals("true")) {
+            asetRateModifier = 0.91;
+            atempo = 1.0;
+        }
+
+        modifyAudioFile(file);
+
+        file.setFileCode("/download/" + file.getFileCode());
+
+        resetValuesToDefaultAfterProcessing();
+    }
+
+    private void modifyAudioFile(AudioFile file) {
         String songPath = Paths.get("user-uploaded-files", file.getFileCode() +
                 "-" + file.getFileName()).toAbsolutePath().toString();
 
-        executeRuntimeCommand(songPath, asetRateModifier, atempo);
+        executeRuntimeCommand(songPath);
     }
 
-    private static void executeRuntimeCommand(
-            String songPath, double asetRateModifier,
-            double atempo) {
+    private void executeRuntimeCommand(
+            String songPath) {
         try {
             Path songParentDirectory =
                     Paths.get(songPath).getParent().toAbsolutePath();
 
             List<String> commands =
-                    createFfmpegCommandBody(songPath, asetRateModifier, atempo);
+                    createFfmpegCommandBody(songPath);
 
             setupAndStartFfmpegProcess(songParentDirectory, commands);
 
@@ -53,9 +61,8 @@ public class FfmpegUtil {
         }
     }
 
-    private static List<String> createFfmpegCommandBody(
-            String songPath,
-            double asetRateModifier, double atempo) {
+    private List<String> createFfmpegCommandBody(
+            String songPath) {
         List<String> commandBody = new ArrayList<>();
 
         commandBody.add("ffmpeg");
@@ -78,7 +85,7 @@ public class FfmpegUtil {
         return commandBody;
     }
 
-    private static void setupAndStartFfmpegProcess(
+    private void setupAndStartFfmpegProcess(
             Path workingDirectory, List<String> commands)
             throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(commands);
@@ -97,7 +104,7 @@ public class FfmpegUtil {
         }
     }
 
-    private static void replaceOldFileWithFfmpegOutput(List<String> commands) {
+    private void replaceOldFileWithFfmpegOutput(List<String> commands) {
         File originalFile = new File(commands.get(3));
         File tempFile = new File(commands.get(commands.size() - 1));
 
@@ -106,5 +113,26 @@ public class FfmpegUtil {
         } else {
             System.out.println("[FFMPEG]: Failed to replace file");
         }
+    }
+
+    private void resetValuesToDefaultAfterProcessing() {
+        this.asetRateModifier = 1.25;
+        this.atempo = 1.06;
+    }
+
+    public double getAsetRateModifier() {
+        return asetRateModifier;
+    }
+
+    public void setAsetRateModifier(double asetRateModifier) {
+        this.asetRateModifier = asetRateModifier;
+    }
+
+    public double getAtempo() {
+        return atempo;
+    }
+
+    public void setAtempo(double atempo) {
+        this.atempo = atempo;
     }
 }
