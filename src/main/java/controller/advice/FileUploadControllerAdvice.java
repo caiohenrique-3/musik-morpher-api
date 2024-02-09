@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackageClasses =
+        {controller.FileUploadController.class})
 public class FileUploadControllerAdvice {
     @ExceptionHandler({IOException.class, InterruptedException.class})
     public ResponseEntity<String> handleIoException() {

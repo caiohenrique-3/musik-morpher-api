@@ -16,29 +16,11 @@ import java.io.IOException;
 public class FileDownloadController {
     @GetMapping("/download/{fileCode}")
     public ResponseEntity<?> downloadFile(
-            @PathVariable("fileCode") String fileCode) {
-        Resource resource = null;
+            @PathVariable("fileCode") String fileCode) throws IOException {
 
-        try {
-            resource = FileDownloadUtil.getFileAsResource(fileCode);
-        } catch (IOException ioe) {
-            return ResponseEntity.internalServerError().build();
-        }
+        ResponseEntity<Resource> response =
+                FileDownloadUtil.prepareFileForDownload(fileCode);
 
-        if (resource == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("File not found");
-        }
-
-        String contentType = "application/octet-stream";
-        String headerValue = "attachment; filename=\""
-                + resource.getFilename() + "\"";
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(resource);
+        return response;
     }
 }

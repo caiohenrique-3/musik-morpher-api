@@ -11,8 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -48,13 +47,22 @@ public class FileDownloadControllerUnitTests {
         String fileName = randomFileName + ".mp3";
 
         // Mocks
-        Resource mockResource = mock(Resource.class);
-        doReturn(fileName).when(mockResource).getFilename();
+        Resource fileToBeDownloaded = mock(Resource.class);
+        doReturn(fileName).when(fileToBeDownloaded).getFilename();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+        headers.setContentType(MediaType.parseMediaType("application/octet-stream"));
+
+        ResponseEntity<Resource> responseToUser = mock(ResponseEntity.class);
+        doReturn(fileToBeDownloaded).when(responseToUser).getBody();
+        doReturn(HttpStatus.OK).when(responseToUser).getStatusCode();
+        doReturn(headers).when(responseToUser).getHeaders();
 
         try (MockedStatic<FileDownloadUtil> mockedFileDownloadUtil = mockStatic(FileDownloadUtil.class)) {
             mockedFileDownloadUtil
-                    .when(() -> FileDownloadUtil.getFileAsResource(fileCode))
-                    .thenReturn(mockResource);
+                    .when(() -> FileDownloadUtil.prepareFileForDownload(fileCode))
+                    .thenReturn(responseToUser);
 
             // Request
             MvcResult result = mvc.perform(get(END_POINT_PATH + fileCode)
@@ -94,7 +102,7 @@ public class FileDownloadControllerUnitTests {
                      mockStatic(FileDownloadUtil.class)) {
             mockedFileDownloadUtil
                     .when(() -> FileDownloadUtil
-                            .getFileAsResource(anyString()))
+                            .prepareFileForDownload(anyString()))
                     .thenThrow(new IOException("Test exception"));
 
             mvc.perform(get(END_POINT_PATH +

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +24,7 @@ public class FileDownloadUtilUnitTests {
     }
 
     @Test
-    void givenHappyPath_whenGetFileAsResource_thenUrlResource() throws IOException {
+    void givenHappyPath_whenPrepareFileForDownload_thenResponse() throws IOException {
         String fileName = randomFileName + ".mp3";
 
         MultipartFile multipartFile = mock(MultipartFile.class);
@@ -35,12 +36,12 @@ public class FileDownloadUtilUnitTests {
 
         AudioFile audioFile = AudioFile.createFromMultipartFile(multipartFile);
 
-        assertInstanceOf(Resource.class, FileDownloadUtil
-                .getFileAsResource(audioFile.getFileCode()));
+        assertInstanceOf(ResponseEntity.class, FileDownloadUtil
+                .prepareFileForDownload(audioFile.getFileCode()));
     }
 
     @Test
-    void givenHappyPath_whenGetFileAsResource_thenNotNull() throws IOException {
+    void givenHappyPath_whenPrepareFileForDownload_thenNotNull() throws IOException {
         String fileName = randomFileName + ".mp3";
 
         MultipartFile multipartFile = mock(MultipartFile.class);
@@ -53,24 +54,27 @@ public class FileDownloadUtilUnitTests {
         AudioFile audioFile = AudioFile.createFromMultipartFile(multipartFile);
 
         assertNotEquals(null,
-                FileDownloadUtil.getFileAsResource(audioFile.getFileCode()));
+                FileDownloadUtil
+                        .prepareFileForDownload(audioFile.getFileCode()));
     }
 
     @Test
-    void givenFailure_whenGetFileAsResource_thenIoException() throws IOException {
+    void givenFailure_whenPrepareFileForDownload_thenIoException() throws IOException {
         try (MockedStatic<FileDownloadUtil> classMock = mockStatic(FileDownloadUtil.class)) {
 
-            classMock.when(() -> FileDownloadUtil.getFileAsResource(anyString())).thenThrow(new IOException("Test exception"));
+            classMock.when(() -> FileDownloadUtil
+                    .prepareFileForDownload(anyString())).thenThrow(new IOException("Test exception"));
 
             assertThrows(IOException.class, () ->
-                    FileDownloadUtil.getFileAsResource("f1l3c0d3"));
+                    FileDownloadUtil.prepareFileForDownload("f1l3c0d3"));
         }
     }
 
     @Test
-    void givenBadCode_whenGetFileAsResource_thenNull() throws IOException {
+    void givenBadCode_whenPrepareFileForDownload_thenNotFoundException() throws IOException {
         String bigString = "f1l3c0d3aoksdkoasdqldp120239120çq";
-        assertEquals(null, FileDownloadUtil
-                .getFileAsResource(bigString));
+        assertThrows(controller.exceptions.FileNotFoundException.class,
+                () -> FileDownloadUtil
+                        .prepareFileForDownload(bigString));
     }
 }
