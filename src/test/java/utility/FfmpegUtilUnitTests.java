@@ -40,22 +40,4 @@ public class FfmpegUtilUnitTests {
 
         assertTrue(audioFile.getFileCode().startsWith("/download/"));
     }
-
-    @Test
-    void givenFileProcessed_whenSlowedEqualsTrue_thenResetBeanValuesToDefault() throws IOException {
-        String fileName = randomFileName + ".mp3";
-        String fileCode = "t3stc0d3";
-
-        AudioFile audioFile = new AudioFile();
-        audioFile.setFileCode(fileCode);
-        audioFile.setFileName(fileName);
-        audioFile.setSize(1.0);
-
-        FfmpegUtil ffmpegUtil = new FfmpegUtil();
-
-        ffmpegUtil.processFile(audioFile, "true");
-
-        assertTrue(ffmpegUtil.getAsetRateModifier() == 1.25);
-        assertTrue(ffmpegUtil.getAtempo() == 1.06);
-    }
 }

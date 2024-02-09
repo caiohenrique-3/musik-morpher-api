@@ -10,32 +10,33 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// Since the class is now a bean in Spring, the values don't change between requests
-// This means if the first request has slowed = "true", it will change the values in the bean itself,
-// causing it to affect the next requests too, because asetRate and atempo will have the slowed values now.
-// TODO: Make Spring create & destroy a Bean of this type on each request.
-
 @Component
 public class FfmpegUtil {
+    private static final double DEFAULT_ASETRATE_MODIFIER = 1.25;
+    private static final double DEFAULT_ATEMPO = 1.06;
+    private static final double SLOWED_ASETRATE_MODIFIER = 0.91;
+    private static final double SLOWED_ATEMPO = 1.0;
+
     private double asetRateModifier;
     private double atempo;
 
     public FfmpegUtil() {
-        this.asetRateModifier = 1.25;
-        this.atempo = 1.06;
+        this.asetRateModifier = DEFAULT_ASETRATE_MODIFIER;
+        this.atempo = DEFAULT_ATEMPO;
     }
 
     public void processFile(AudioFile file, String slowed) {
+        asetRateModifier = DEFAULT_ASETRATE_MODIFIER;
+        atempo = DEFAULT_ATEMPO;
+
         if (slowed != null && slowed.equals("true")) {
-            asetRateModifier = 0.91;
-            atempo = 1.0;
+            asetRateModifier = SLOWED_ASETRATE_MODIFIER;
+            atempo = SLOWED_ATEMPO;
         }
 
         modifyAudioFile(file);
 
         file.setFileCode("/download/" + file.getFileCode());
-
-        resetValuesToDefaultAfterProcessing();
     }
 
     private void modifyAudioFile(AudioFile file) {
@@ -112,11 +113,6 @@ public class FfmpegUtil {
         } else {
             System.out.println("[FFMPEG]: Failed to replace file");
         }
-    }
-
-    private void resetValuesToDefaultAfterProcessing() {
-        this.asetRateModifier = 1.25;
-        this.atempo = 1.06;
     }
 
     public double getAsetRateModifier() {
