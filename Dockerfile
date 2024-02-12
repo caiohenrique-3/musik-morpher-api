@@ -13,7 +13,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the jar file from the build stage
-COPY --from=build /target/ch7-0.0.1-SNAPSHOT.jar demo.jar
+COPY --from=build /app/target/ch7-0.0.1-SNAPSHOT.jar demo.jar
 
 # Expose port 8080
 EXPOSE 8080
