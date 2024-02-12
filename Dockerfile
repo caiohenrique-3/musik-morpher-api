@@ -15,8 +15,8 @@ RUN apt-get update && \
 # Copy the jar file from the build stage
 COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar demo.jar
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port
+EXPOSE 9090
 
 # Run the application
 ENTRYPOINT ["java","-jar","demo.jar"]
