@@ -1,6 +1,7 @@
 # Use maven:3.8.5-openjdk-17 as a build stage
 FROM maven:3.8.5-openjdk-17 AS build
-COPY ..
+COPY . /app
+WORKDIR /app
 RUN mvn clean package -DskipTests
 
 # Use openjdk:17.0.1-jdk-slim for the application
